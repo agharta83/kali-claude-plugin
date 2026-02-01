@@ -1,6 +1,8 @@
 {
   "name": "kali-marketplace",
-  "owner": "Kali",
+  "owner": {
+    "name": "Équipe Kali"
+  },
   "plugins": [
     {
       "name": "kali-tools",
