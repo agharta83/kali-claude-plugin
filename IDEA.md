@@ -33,7 +33,7 @@ Voir [design](docs/plans/2026-02-01-slack-notification-design.md)
 | 🟠 P2 | `/event-trace` | Debug inter-services |
 | 🟡 P3 | `/test-contract` | Génération tests depuis OpenAPI |
 | 🟡 P3 | `/service-scaffold` | Rare (nouveau service) |
-| 🟡 P3 | `/hexa-refactor` | Migration progressive du legacy |
+| ~~🔴 P1~~ | ~~`/api-migrate`~~ | ✅ CRÉÉ - Migration API Platform → microservices |
 | 🟡 P3 | `/migration-helper` | Upgrades PHP/Symfony ponctuels |
 
 ---
@@ -540,50 +540,58 @@ inventory/
 
 ---
 
-### `/hexa-refactor` - Refactorer vers architecture hexagonale
+### ~~`/api-migrate` - Migration API Platform → Microservices~~ ✅ CRÉÉ
 
-Aide à migrer du code legacy (notamment depuis core) vers architecture hexa.
+Voir [skills/api-migrate/SKILL.md](skills/api-migrate/SKILL.md) et [design](docs/plans/2026-02-01-api-migrate-design.md)
+
+Migre des endpoints API Platform du monorepo `core` vers les microservices.
 
 **Fonctionnalités :**
-- Analyse une classe/module existant
-- Identifie les responsabilités (domain, application, infrastructure)
-- Propose le découpage Domain/Application/Infrastructure
-- Génère les interfaces (ports)
-- Crée les adapters
-- Suggère les tests à ajouter
+- Analyse complète : Controller, Extensions, Providers, Filters, Normalizers, Voters, DTOs
+- Mapping vers architecture CQRS (Query/Command + Handler)
+- Suggestions de modernisation PHP 8 + attributs Symfony
+- Vérification de non-régression avec contrat OpenAPI
+- Génération optionnelle du code cible
 
 **Usage :**
 ```bash
-# Analyser une classe
-/hexa-refactor src/Legacy/UserService.php
+# Analyse seule (rapport)
+/api-migrate GET /api/documents --target accounting
 
-# Refactorer vers un nouveau domaine
-/hexa-refactor src/Legacy/UserService.php --target src/User/
+# Avec génération de code
+/api-migrate POST /api/cdn_files --target user --generate
+
+# Opération custom
+/api-migrate PUT /api/documents/change_status/{uuid} --target accounting
 ```
 
 **Output :**
 ```markdown
-## Analyse de UserService.php
+## Analyse de migration : GET /api/documents
 
-### Responsabilités identifiées
-- **Domain** : UserEntity, validation rules
-- **Application** : CreateUser, UpdateUser commands
-- **Infrastructure** : DoctrineUserRepository, EmailNotifier
+### Composants détectés
+| Type | Fichier | Rôle |
+|------|---------|------|
+| Extension | DocumentExtension.php | Filtre company + permissions |
+| Filter | CustomClientNameDocumentFilter.php | Recherche client |
+| Normalizer | DocumentNormalizer.php | Enrichit response |
+| Voter | DocumentVoter.php | Autorisations |
 
-### Découpage proposé
-src/User/
-├── Domain/
-│   ├── Model/User.php (entity pure)
-│   ├── Repository/UserRepositoryInterface.php (port)
-│   └── Service/UserValidator.php
-├── Application/
-│   ├── Command/CreateUserCommand.php
-│   └── Handler/CreateUserHandler.php
-└── Infrastructure/
-    ├── Doctrine/DoctrineUserRepository.php (adapter)
-    └── Notification/EmailUserNotifier.php (adapter)
+### Mapping vers accounting
+| Source | Cible | Type |
+|--------|-------|------|
+| Document entity | GetDocumentsQuery | Query CQRS |
+| DocumentExtension | GetDocumentsHandler | Handler logic |
 
-Procéder au refactoring ?
+### Suggestions d'amélioration
+- readonly class pour Query/Model
+- Attributs PHP 8 (#[Route], #[IsGranted])
+- Model typé au lieu d'array
+
+### Checklist BC
+- [ ] Même structure JSON
+- [ ] Mêmes status codes
+- [ ] Mêmes filtres supportés
 ```
 
 ---

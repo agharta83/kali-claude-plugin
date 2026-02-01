@@ -444,6 +444,111 @@ Vérifie la compatibilité des changements avec les contrats OpenAPI centralisé
 
 **Prérequis :** Submodule `api-contracts/` initialisé
 
+### /impact-analysis
+
+Analyse l'impact d'un changement sur les autres microservices Obat.
+
+```bash
+# Analyser le diff courant
+/impact-analysis
+
+# Fichier spécifique
+/impact-analysis --file src/User/Domain/Event/UserDeactivatedEvent.php
+
+# Endpoint REST
+/impact-analysis --endpoint "GET /api/users"
+
+# Event RabbitMQ
+/impact-analysis --event UserDeactivatedEvent
+
+# Tous les consommateurs d'un service
+/impact-analysis --service obat-user
+
+# Rapport détaillé
+/impact-analysis --verbose
+```
+
+**Analyse :**
+- Scan du code source des 19 services
+- Détection des appels HTTP inter-services
+- Détection des événements RabbitMQ consommés
+- Identification des dépendances transitives
+
+**Output :**
+- Services impactés avec niveau de risque
+- Endpoints/events concernés
+- Actions de coordination requises
+
+**Intégration :** Appelé par `/finish-branch --strict`
+
+### /cqrs-generate
+
+Scaffolde du code CQRS (Commands, Queries, Events) selon les conventions Obat.
+
+```bash
+# Commands
+/cqrs-generate command CreateUser --fields "email:string, name:string"
+/cqrs-generate command DeactivateUser --domain User --fields "userId:UserUuid, reason:?string"
+
+# Queries
+/cqrs-generate query GetUserById --fields "userId:UserUuid"
+/cqrs-generate query ListUsers --domain User --fields "companyUuid:CompanyUuid, page:int"
+
+# Events sync (même process)
+/cqrs-generate event PasswordChanged --fields "userId:string"
+
+# Events async (RabbitMQ interne)
+/cqrs-generate event UserCreated --async --fields "userUuid:string, email:string"
+
+# Events externes (cross-service)
+/cqrs-generate event UserDeactivated --external --fields "userUuid:string, reason:string"
+```
+
+**Fichiers générés :**
+
+| Type | Fichiers |
+|------|----------|
+| Command | `Command/{Name}Command.php` + `Handler/{Name}Handler.php` |
+| Query | `Query/{Name}Query.php` + `Handler/{Name}Handler.php` |
+| Event | `Domain/Event/{Name}Event.php` + `EventSubscriber/{Name}Event/Handle{Name}Subscriber.php` |
+
+**Features :**
+- Auto-détection du service, demande interactive du domaine
+- Résolution automatique des imports (ValueObjects)
+- Mise à jour de `messenger.yaml` pour events `--external`
+- Classes `final readonly` avec constructor property promotion
+
+### /api-migrate
+
+Migre des endpoints API Platform du monorepo `core` vers les microservices.
+
+```bash
+# Analyse seule (rapport de migration)
+/api-migrate GET /api/documents --target accounting
+
+# Avec génération de code
+/api-migrate POST /api/cdn_files --target user --generate
+
+# Opération custom API Platform
+/api-migrate PUT /api/documents/change_status/{uuid} --target accounting
+```
+
+**Analyse complète :**
+- Controller, Extensions Doctrine, Providers, Persisters
+- Filters, Normalizers, Transformers
+- Voters, Validators, DTOs
+- Security expressions et multi-tenancy
+
+**Output :**
+- Composants détectés avec leur rôle
+- Mapping source → cible (architecture CQRS)
+- Suggestions de modernisation (PHP 8, attributs Symfony)
+- Comparaison avec contrat OpenAPI (si existe)
+- Checklist de non-régression complète
+
+**Flag `--generate` :**
+Génère le code CQRS dans le service cible via `/cqrs-generate`.
+
 ### /mr-feedback
 
 Traitement interactif des feedbacks de code review reçus sur une Merge Request GitLab.
@@ -666,6 +771,20 @@ skills/
 │   ├── SKILL.md
 │   └── references/
 │       └── breaking-change-rules.md
+├── impact-analysis/                    # Analyse impact cross-service
+│   ├── SKILL.md
+│   └── references/
+│       └── message-service-mapping.md
+├── cqrs-generate/                      # Scaffolding CQRS
+│   ├── SKILL.md
+│   └── references/
+│       └── templates.md
+├── api-migrate/                        # Migration API Platform → microservices
+│   ├── SKILL.md
+│   └── references/
+│       ├── component-mapping.md
+│       ├── modernization-rules.md
+│       └── bc-checklist.md
 ├── mr-feedback/SKILL.md                # Traitement feedbacks MR reçus
 ├── sdd/                                # Specification Driven Development
 │   ├── setup/SKILL.md                  # Initialisation projet
