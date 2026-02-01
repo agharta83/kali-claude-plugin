@@ -1,0 +1,12 @@
+{
+  "name": "kali-marketplace",
+  "owner": "Kali",
+  "plugins": [
+    {
+      "name": "kali-tools",
+      "version": "1.0.0",
+      "source": "./",
+      "description": "Skills et commandes Kali"
+    }
+  ]
+}

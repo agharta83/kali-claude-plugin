@@ -1,0 +1,124 @@
+# Configuration partagée équipe Obat
+jira:
+  # Composants disponibles (favoris)
+  preferred_components:
+    - backend
+    - frontend
+    - mobile
+    - infrastructure
+
+  # Labels fréquents
+  common_labels:
+    - feature
+    - bugfix
+    - tech-debt
+    - security
+
+# Comportement du brainstorming
+brainstorming:
+  # Proposer de récupérer le contexte Jira si un ID est détecté
+  auto_detect_jira_ids: true
+
+  # Profondeur de génération (epic → story → task → subtask)
+  default_depth: full
+
+# Configuration Workflow (orchestration)
+workflow:
+  # Phases par défaut du cycle de développement
+  default-flow:
+    - brainstorm
+    - plan
+    - execute-plan
+    - code-review
+    - finish-branch
+
+  # Phases nécessitant validation utilisateur
+  checkpoints:
+    - plan
+    - code-review
+
+  # Seuil de complexité pour mode autopilot (0-10)
+  autopilot-threshold: 3
+
+  # Mode d'exécution par défaut (standard, subagent)
+  default-execution-mode: standard
+
+  # Proposer worktree automatiquement si pas sur branche feature
+  auto-suggest-worktree: true
+
+# Configuration Quality Gates pour /finish-branch
+finish-branch:
+  # Gates par type de projet (auto-détecté)
+  project-types:
+    php-backend:
+      # Détection : composer.json + Makefile présents
+      gates:
+        - make test
+        - make phpstan
+        - make fix-cs
+        - make rector
+        - make deptrac
+    php-simple:
+      # Détection : composer.json sans Makefile
+      gates:
+        - composer test
+        - composer phpstan
+    node:
+      # Détection : package.json présent
+      gates:
+        - npm test
+        - npm run lint
+    python:
+      # Détection : pyproject.toml ou requirements.txt
+      gates:
+        - pytest
+        - ruff check
+
+  # Gates additionnelles pour --strict (analyses approfondies)
+  strict-gates:
+    - skill: contract-check
+      condition: contracts-dir-exists
+    - skill: impact-analysis
+      condition: contracts-dir-exists
+
+# Configuration Ralph Loop
+ralph:
+  # Nombre max d'iterations avant arret automatique
+  max_iterations: 20
+
+  # Promise de completion (Claude doit output cette phrase pour terminer)
+  completion_promise: "ALL_STORIES_PASS"
+
+# Configuration Slack
+slack:
+  # Channel pour les demandes de code review
+  code_review_channel: "#code-reviews"
+
+  # Messages aléatoires pour les demandes de CR
+  cr_messages:
+    - template: |
+        👀 Qui veut review ma MR ?
+        {title}
+        → {url}
+    - template: |
+        🎯 CR disponible !
+        MR !{mr_id} - {title}
+        Premier arrivé, premier servi 🏃
+        → {url}
+    - template: |
+        🚀 Pipeline vert, MR prête !
+        ✨ {title}
+        🔗 {url}
+        Merci d'avance ! 🙏
+    - template: |
+        ☕ Une petite review ?
+        MR !{mr_id} - {title}
+        → {url}
+
+  # Blagues optionnelles (20% de chance d'apparaître)
+  jokes:
+    - "Je promets qu'il n'y a que 2 fichiers changés... par commit 😅"
+    - "J'ai écrit des tests, je le jure 🤞"
+    - "Pas de force push cette fois, promis"
+    - "Le code est auto-documenté (dit-il, confiant)"
+    - "Fonctionne sur ma machine ™️"

@@ -1,0 +1,9 @@
+{
+  "name": "kali-tools",
+  "version": "1.0.0",
+  "description": "Outils Claude Code pour l'équipe Kali - Extension brainstorming avec intégration Jira",
+  "author": {
+    "name": "Équipe Kali"
+  },
+  "keywords": ["jira", "brainstorming", "kali", "planning"]
+}
