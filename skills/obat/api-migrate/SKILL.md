@@ -1,9 +1,27 @@
 ---
-name: api-migrate
+name: obat/api-migrate
 description: Use when migrating API Platform endpoints from the Obat monorepo (core) to microservices. Analyzes controllers, extensions, providers, filters, normalizers, voters and generates migration report with improvement suggestions and BC checklist.
 ---
 
 # API Migrate
+
+## Prérequis : Contexte Obat
+
+Ce skill nécessite un contexte Obat. Vérifier :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+Si hors contexte Obat → Afficher :
+```
+⚠️ Ce skill nécessite un contexte Obat (remote gitlab.obat.fr).
+   Utilisez --obat pour forcer l'exécution.
+```
+
+Si `--obat` fourni → Continuer malgré l'absence de contexte.
+
+---
 
 Migrer des endpoints API Platform depuis le monorepo `core` vers les microservices Obat.
 

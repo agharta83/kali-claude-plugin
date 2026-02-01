@@ -21,8 +21,14 @@ fi
 
 echo "🔍 Pre-commit checks..." >&2
 
+# Détecter le contexte Obat
+IS_OBAT_CONTEXT=0
+if git remote -v 2>/dev/null | grep -q "gitlab.obat.fr"; then
+    IS_OBAT_CONTEXT=1
+fi
+
 # Détecter le type de projet
-if [[ -f "composer.json" && -f "Makefile" ]]; then
+if [[ -f "composer.json" && -f "Makefile" && $IS_OBAT_CONTEXT -eq 1 ]]; then
     PROJECT_TYPE="php-obat"
 elif [[ -f "composer.json" ]]; then
     PROJECT_TYPE="php-simple"
@@ -31,6 +37,13 @@ elif [[ -f "package.json" ]]; then
 else
     echo "✅ Unknown project type, skipping checks" >&2
     exit 0
+fi
+
+# Afficher le contexte
+if [[ $IS_OBAT_CONTEXT -eq 1 ]]; then
+    echo "  Context: Obat ($PROJECT_TYPE)" >&2
+else
+    echo "  Context: Generic ($PROJECT_TYPE)" >&2
 fi
 
 FAILED=0

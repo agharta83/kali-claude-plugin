@@ -1,9 +1,9 @@
 {
   "name": "kali-tools",
-  "version": "1.0.0",
-  "description": "Outils Claude Code pour l'équipe Kali - Extension brainstorming avec intégration Jira",
+  "version": "2.0.0",
+  "description": "Plugin Claude Code avec skills génériques (workflow, brainstorm, code-review...) et skills Obat-spécifiques (obat/cqrs-generate, obat/contract-check...). Détection automatique du contexte via remote Git.",
   "author": {
     "name": "Équipe Kali"
   },
-  "keywords": ["jira", "brainstorming", "kali", "planning"]
+  "keywords": ["jira", "brainstorming", "kali", "planning", "cqrs", "microservices", "code-review", "workflow"]
 }

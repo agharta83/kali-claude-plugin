@@ -11,14 +11,24 @@ Quand Claude exécute une commande `git commit`, le hook :
 3. **Vérifie** — Lance les vérifications (phpstan, deptrac)
 4. **Bloque ou autorise** — Si erreurs, bloque le commit
 
+## Détection du contexte
+
+Le hook détecte automatiquement si vous êtes dans un contexte Obat :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
 ## Détection du type de projet
 
-| Détection | Type | Checks |
-|-----------|------|--------|
-| `composer.json` + `Makefile` | PHP Obat | fix-cs, rector, phpstan, deptrac |
-| `composer.json` seul | PHP simple | phpstan |
-| `package.json` | Node | npm run lint |
-| Autre | Inconnu | Aucun (laisser passer) |
+| Contexte | Détection | Type | Checks |
+|----------|-----------|------|--------|
+| Obat | `composer.json` + `Makefile` | PHP Obat | fix-cs, rector, phpstan, deptrac |
+| Générique | `composer.json` | PHP simple | phpstan |
+| Générique | `package.json` | Node | npm run lint |
+| Générique | Autre | Inconnu | Aucun (laisser passer) |
+
+**Note :** Les checks complets (fix-cs, rector, deptrac) ne sont exécutés que dans un contexte Obat avec Makefile.
 
 ## Cas ignorés
 

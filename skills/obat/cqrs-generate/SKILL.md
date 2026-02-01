@@ -1,9 +1,27 @@
 ---
-name: cqrs-generate
+name: obat/cqrs-generate
 description: Use when scaffolding CQRS code (Commands, Queries, Events) in Obat microservices. Generates PHP classes following hexagonal architecture conventions with proper interfaces, handlers, and subscribers.
 ---
 
 # CQRS Generate
+
+## Prérequis : Contexte Obat
+
+Ce skill nécessite un contexte Obat. Vérifier :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+Si hors contexte Obat → Afficher :
+```
+⚠️ Ce skill nécessite un contexte Obat (remote gitlab.obat.fr).
+   Utilisez --obat pour forcer l'exécution.
+```
+
+Si `--obat` fourni → Continuer malgré l'absence de contexte.
+
+---
 
 Scaffolder du code CQRS selon les conventions Obat.
 

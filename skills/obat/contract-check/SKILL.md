@@ -1,9 +1,27 @@
 ---
-name: contract-check
+name: obat/contract-check
 description: Use when modifying API endpoints or data schemas in Obat microservices. Detects breaking changes by comparing code with centralized OpenAPI contracts in api-contracts submodule.
 ---
 
 # Contract Check
+
+## Prérequis : Contexte Obat
+
+Ce skill nécessite un contexte Obat. Vérifier :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+Si hors contexte Obat → Afficher :
+```
+⚠️ Ce skill nécessite un contexte Obat (remote gitlab.obat.fr).
+   Utilisez --obat pour forcer l'exécution.
+```
+
+Si `--obat` fourni → Continuer malgré l'absence de contexte.
+
+---
 
 Valide la compatibilité des changements locaux avec les contrats OpenAPI centralisés.
 

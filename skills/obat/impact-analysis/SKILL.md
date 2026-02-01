@@ -1,9 +1,27 @@
 ---
-name: impact-analysis
+name: obat/impact-analysis
 description: Use when modifying API endpoints, events, or data schemas in Obat microservices. Scans all 19 services to identify consumers of your changes and coordination requirements.
 ---
 
 # Impact Analysis
+
+## Prérequis : Contexte Obat
+
+Ce skill nécessite un contexte Obat. Vérifier :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+Si hors contexte Obat → Afficher :
+```
+⚠️ Ce skill nécessite un contexte Obat (remote gitlab.obat.fr).
+   Utilisez --obat pour forcer l'exécution.
+```
+
+Si `--obat` fourni → Continuer malgré l'absence de contexte.
+
+---
 
 Analyse l'impact d'un changement sur les autres services Obat en scannant leur code source.
 

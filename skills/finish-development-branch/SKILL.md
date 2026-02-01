@@ -5,11 +5,26 @@ description: "Finalise une branche de développement : quality gates configurabl
 
 # Finish Branch
 
-Finalise une branche de développement selon le workflow Obat.
+Finalise une branche de développement.
 
 **Principe :** Quality gates → Créer MR GitLab → Proposer transition Jira
 
 **Annonce au démarrage :** "J'utilise le skill finish-branch pour finaliser cette branche."
+
+## Détection du contexte
+
+Détecter si on est dans un contexte Obat :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+| Contexte | Comportement |
+|----------|--------------|
+| Obat détecté | Charger `config.obat.finish-branch`, conventions Obat actives |
+| Hors Obat | Charger `config.finish-branch` générique |
+| `--obat` flag | Forcer le contexte Obat |
+| `--no-obat` flag | Forcer le contexte générique |
 
 ## Routage
 
@@ -150,15 +165,27 @@ Mode strict activé
 Gates additionnelles :
 ```
 
-**Gate contract-check :**
-- Condition : le dossier `contracts/` existe
-- Si condition remplie : invoquer le skill `/contract-check` (quand il existera)
-- Si skill non disponible : afficher "⚠️ Skill contract-check non disponible, skipped"
+**Prérequis :** `--strict` nécessite un contexte Obat.
 
-**Gate impact-analysis :**
-- Condition : le dossier `contracts/` existe
-- Si condition remplie : invoquer le skill `/impact-analysis` (quand il existera)
-- Si skill non disponible : afficher "⚠️ Skill impact-analysis non disponible, skipped"
+Si hors contexte Obat et `--strict` demandé :
+```
+⚠️ Le mode --strict nécessite un contexte Obat (remote gitlab.obat.fr).
+   Les gates contract-check et impact-analysis ne sont pas disponibles.
+
+Options :
+1. Continuer sans gates strict
+2. Annuler
+```
+
+**Gate obat/contract-check :**
+- Condition : le dossier `api-contracts/` existe
+- Si condition remplie : invoquer le skill `/obat/contract-check`
+- Si skill non disponible : afficher "⚠️ Skill obat/contract-check non disponible, skipped"
+
+**Gate obat/impact-analysis :**
+- Condition : le dossier `api-contracts/` existe
+- Si condition remplie : invoquer le skill `/obat/impact-analysis`
+- Si skill non disponible : afficher "⚠️ Skill obat/impact-analysis non disponible, skipped"
 
 Si une gate strict échoue → STOPPER avec le message d'erreur.
 
@@ -320,7 +347,9 @@ Puis nettoyer le worktree si applicable.
 | `--strict` | Gates de base + contract-check + impact-analysis |
 | `--skip-gates` | Bypass avec justification obligatoire |
 
-## Conventions Obat
+## Conventions (contexte Obat)
+
+Ces conventions s'appliquent uniquement si le contexte Obat est détecté.
 
 ### Commits
 ```
@@ -341,6 +370,10 @@ Exemples :
 - `feat/DEL-123`
 - `tech/DEL-456-refactor`
 - `hotfix/OBAT-789`
+
+### Hors contexte Obat
+
+Pas de convention imposée pour les commits et branches.
 
 ## Prérequis
 
@@ -376,5 +409,5 @@ Exemples :
 **Fonctionne avec :**
 - MCP `gitlab-enhanced` - Création des MR
 - MCP `atlassian` - Transitions Jira
-- `/contract-check` - Gate strict (futur)
-- `/impact-analysis` - Gate strict (futur)
+- `/obat/contract-check` - Gate strict (contexte Obat)
+- `/obat/impact-analysis` - Gate strict (contexte Obat)

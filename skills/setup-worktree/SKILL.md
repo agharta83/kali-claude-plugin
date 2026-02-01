@@ -7,21 +7,35 @@ description: "Crée un worktree isolé pour le développement. Utilisé par /exe
 
 Crée un worktree Git isolé pour travailler sur une feature sans affecter le workspace principal.
 
-**Principe :** Sélection du répertoire + vérification sécurité + création branche Obat
+**Principe :** Sélection du répertoire + vérification sécurité + création branche
 
 **Annonce au démarrage :** "Je crée un worktree isolé pour cette implémentation."
 
+## Détection du contexte
+
+Détecter si on est dans un contexte Obat :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+| Contexte | Comportement |
+|----------|--------------|
+| Obat détecté | Conventions Obat pour le nom de branche (`type/PROJET-ID`) |
+| Hors Obat | Format libre, demande un nom de branche |
+| `--obat` flag | Forcer les conventions Obat |
+| `--no-obat` flag | Forcer le format libre |
+
 ## Étape 1 : Collecter les informations
 
-### Demander l'ID Jira
+### Mode Obat (contexte détecté ou `--obat`)
 
-Si pas déjà fourni :
+**Demander l'ID Jira :**
 ```
 Quel est l'ID du ticket Jira ? (ex: DEL-123)
 ```
 
-### Demander le type de branche
-
+**Demander le type de branche :**
 ```
 Quel type de branche ?
 1. feat (nouvelle fonctionnalité)
@@ -30,16 +44,24 @@ Quel type de branche ?
 4. hotfix (correction urgente)
 ```
 
-### Demander une description courte (optionnel)
-
+**Demander une description courte (optionnel) :**
 ```
 Description courte pour la branche ? (optionnel, ex: "auth-flow")
 Appuyez sur Entrée pour ignorer.
 ```
 
+### Mode générique (hors Obat)
+
+**Demander le nom de branche :**
+```
+Nom de la branche à créer ? (ex: feature/my-feature)
+```
+
 ## Étape 2 : Construire le nom de branche
 
-**Format Obat :**
+### Mode Obat
+
+**Format :**
 ```
 <type>/<PROJET>-<ID>[-description]
 ```
@@ -49,6 +71,10 @@ Appuyez sur Entrée pour ignorer.
 - `feat/DEL-123-auth-flow`
 - `tech/OBAT-456-refactor-db`
 - `fix/DEL-789-login-bug`
+
+### Mode générique
+
+Utiliser directement le nom de branche fourni par l'utilisateur.
 
 ## Étape 3 : Sélectionner le répertoire worktree
 
@@ -164,9 +190,9 @@ Tests : ✓ (47 tests, 0 échecs)
 Prêt pour l'implémentation.
 ```
 
-## Convention de nommage Obat
+## Conventions de nommage
 
-### Branches
+### Contexte Obat
 
 | Type | Pattern | Exemple |
 |------|---------|---------|
@@ -175,11 +201,19 @@ Prêt pour l'implémentation.
 | Fix | `fix/<PROJET>-<ID>[-desc]` | `fix/DEL-789-login` |
 | Hotfix | `hotfix/<PROJET>-<ID>[-desc]` | `hotfix/OBAT-101-crash` |
 
+### Hors contexte Obat
+
+Pas de convention imposée. Exemples courants :
+- `feature/my-feature`
+- `bugfix/fix-login`
+- `refactor/clean-db`
+
 ### Worktrees
 
 Le worktree est créé avec le même nom que la branche :
 ```
-.worktrees/feat/DEL-123-auth/
+.worktrees/feat/DEL-123-auth/   # Obat
+.worktrees/feature/my-feature/  # Générique
 ```
 
 ## Référence rapide

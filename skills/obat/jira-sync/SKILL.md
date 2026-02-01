@@ -1,9 +1,27 @@
 ---
-name: jira-sync
+name: obat/jira-sync
 description: "Synchronise un document de design vers Jira - crée les nouveaux tickets et applique les modifications depuis la section Suggestions Jira"
 ---
 
 # Synchronisation vers Jira
+
+## Prérequis : Contexte Obat
+
+Ce skill nécessite un contexte Obat. Vérifier :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+Si hors contexte Obat → Afficher :
+```
+⚠️ Ce skill nécessite un contexte Obat (remote gitlab.obat.fr).
+   Utilisez --obat pour forcer l'exécution.
+```
+
+Si `--obat` fourni → Continuer malgré l'absence de contexte.
+
+---
 
 ## Vue d'ensemble
 

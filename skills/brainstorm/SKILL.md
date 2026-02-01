@@ -5,6 +5,19 @@ description: "Brainstorming avec support Jira et SDD optionnels. Utilisez --jira
 
 # Brainstorming avec support Jira optionnel
 
+## Détection du contexte
+
+Détecter si on est dans un contexte Obat :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+| Contexte | Comportement |
+|----------|--------------|
+| Obat détecté | ADR au format Obat, `/obat/jira-sync` proposé |
+| Hors Obat | ADR au format standard, pas de sync Jira Obat |
+
 ## Routage
 
 Analyser la requête utilisateur pour déterminer le mode :
@@ -305,6 +318,10 @@ Si un ou plusieurs critères sont remplis, proposer :
 
 ### Format de l'ADR
 
+Le format dépend du contexte :
+
+#### Format Obat (si contexte Obat détecté)
+
 Si l'utilisateur accepte, générer `docs/plans/ADR-XXXX-titre-kebab-case.md` conforme au template Obat :
 
 ```markdown
@@ -349,6 +366,24 @@ Nous choisissons l'**Option X**.
 
 > **Note :** Le numéro XXXX est un placeholder. Avant de déplacer l'ADR vers `blueprint/adr/`, remplacez-le par le prochain numéro disponible.
 
+#### Format standard (hors contexte Obat)
+
+```markdown
+# ADR: [Titre de la Décision]
+
+**Date:** YYYY-MM-DD
+**Status:** Proposed
+
+## Context
+[Problème à résoudre]
+
+## Decision
+[Décision prise]
+
+## Consequences
+[Impacts de la décision]
+```
+
 ## Phase 7 : Proposition de PRD (Ralph Loop)
 
 Si le ticket est une **Story**, **Task** ou **Subtask** (pas une Epic), proposer la génération d'un PRD :
@@ -372,11 +407,22 @@ Les valeurs par défaut sont dans `config/plugin-config.yaml` :
 
 ## Après le design (mode Jira)
 
+### Si contexte Obat
+
 Proposer :
 > "Design sauvegardé dans `docs/plans/OBAT-123-design.md`.
 >
-> Pour synchroniser les suggestions vers Jira, utilisez `/jira-sync OBAT-123`.
+> Pour synchroniser les suggestions vers Jira, utilisez `/obat/jira-sync OBAT-123`.
 >
 > [Si ADR généré] ADR sauvegardé dans `docs/plans/ADR-XXXX-titre.md`. Pensez à le déplacer vers `blueprint/adr/` après validation.
 >
 > [Si PRD généré] PRD sauvegardé dans `docs/plans/<TICKET-ID>-prd.json`. Lancez `/execute-plan --loop` pour démarrer l'implémentation."
+
+### Hors contexte Obat
+
+Proposer :
+> "Design sauvegardé dans `docs/plans/<TICKET-ID>-design.md`.
+>
+> [Si ADR généré] ADR sauvegardé dans `docs/plans/ADR-titre.md`.
+>
+> [Si PRD généré] PRD sauvegardé. Lancez `/execute-plan --loop` pour démarrer l'implémentation."

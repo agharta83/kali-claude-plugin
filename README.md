@@ -20,7 +20,26 @@ Pour utiliser `/execute-plan --loop`, ce plugin nécessite [ralph-loop](https://
 /plugin install kali-tools@kali-marketplace
 ```
 
-## Skills
+## Détection de contexte
+
+Ce plugin détecte automatiquement si vous êtes dans un contexte Obat :
+
+```bash
+git remote -v | grep -q "gitlab.obat.fr"
+```
+
+| Contexte | Skills disponibles | Comportement |
+|----------|-------------------|--------------|
+| **Obat** | Tous (génériques + `obat/*`) | Conventions Obat, quality gates complets |
+| **Générique** | Génériques uniquement | Format libre, quality gates basiques |
+
+**Flags de surcharge :**
+- `--obat` : Force le contexte Obat
+- `--no-obat` : Force le contexte générique
+
+## Skills génériques
+
+Ces skills fonctionnent dans tous les contextes.
 
 ### /workflow
 
@@ -141,19 +160,19 @@ En mode Jira, Claude :
 
 L'ADR est créé dans `docs/plans/ADR-XXXX-titre.md` au format Obat. Pensez à le déplacer vers `blueprint/adr/` après validation.
 
-### /jira-sync
+### /obat/jira-sync
 
 Synchronise les suggestions d'un design doc vers Jira.
 
 ```bash
 # Sync un design doc spécifique
-/jira-sync OBAT-123
+/obat/jira-sync OBAT-123
 
 # Sync le dernier design doc Jira
-/jira-sync
+/obat/jira-sync
 
 # Prévisualiser sans créer
-/jira-sync --dry-run
+/obat/jira-sync --dry-run
 ```
 
 ### /plan
@@ -406,19 +425,23 @@ Code review multi-agents pour changements locaux ou Merge Request GitLab.
 
 **Prérequis Mode MR :** MCP `gitlab-enhanced` configuré
 
-### /contract-check
+## Skills Obat
+
+Ces skills nécessitent un contexte Obat (remote `gitlab.obat.fr`). Hors contexte, ils affichent un message d'erreur sauf si `--obat` est utilisé.
+
+### /obat/obat/contract-check
 
 Vérifie la compatibilité des changements avec les contrats OpenAPI centralisés dans le submodule `api-contracts/`.
 
 ```bash
 # Analyser le diff courant
-/contract-check
+/obat/contract-check
 
 # Endpoint spécifique
-/contract-check POST /api/users
+/obat/contract-check POST /api/users
 
 # Service spécifique
-/contract-check --service obat-user
+/obat/contract-check --service obat-user
 ```
 
 **Détection :**
@@ -444,28 +467,28 @@ Vérifie la compatibilité des changements avec les contrats OpenAPI centralisé
 
 **Prérequis :** Submodule `api-contracts/` initialisé
 
-### /impact-analysis
+### /obat/impact-analysis
 
 Analyse l'impact d'un changement sur les autres microservices Obat.
 
 ```bash
 # Analyser le diff courant
-/impact-analysis
+/obat/impact-analysis
 
 # Fichier spécifique
-/impact-analysis --file src/User/Domain/Event/UserDeactivatedEvent.php
+/obat/impact-analysis --file src/User/Domain/Event/UserDeactivatedEvent.php
 
 # Endpoint REST
-/impact-analysis --endpoint "GET /api/users"
+/obat/impact-analysis --endpoint "GET /api/users"
 
 # Event RabbitMQ
-/impact-analysis --event UserDeactivatedEvent
+/obat/impact-analysis --event UserDeactivatedEvent
 
 # Tous les consommateurs d'un service
-/impact-analysis --service obat-user
+/obat/impact-analysis --service obat-user
 
 # Rapport détaillé
-/impact-analysis --verbose
+/obat/impact-analysis --verbose
 ```
 
 **Analyse :**
@@ -481,27 +504,27 @@ Analyse l'impact d'un changement sur les autres microservices Obat.
 
 **Intégration :** Appelé par `/finish-branch --strict`
 
-### /cqrs-generate
+### /obat/cqrs-generate
 
 Scaffolde du code CQRS (Commands, Queries, Events) selon les conventions Obat.
 
 ```bash
 # Commands
-/cqrs-generate command CreateUser --fields "email:string, name:string"
-/cqrs-generate command DeactivateUser --domain User --fields "userId:UserUuid, reason:?string"
+/obat/cqrs-generate command CreateUser --fields "email:string, name:string"
+/obat/cqrs-generate command DeactivateUser --domain User --fields "userId:UserUuid, reason:?string"
 
 # Queries
-/cqrs-generate query GetUserById --fields "userId:UserUuid"
-/cqrs-generate query ListUsers --domain User --fields "companyUuid:CompanyUuid, page:int"
+/obat/cqrs-generate query GetUserById --fields "userId:UserUuid"
+/obat/cqrs-generate query ListUsers --domain User --fields "companyUuid:CompanyUuid, page:int"
 
 # Events sync (même process)
-/cqrs-generate event PasswordChanged --fields "userId:string"
+/obat/cqrs-generate event PasswordChanged --fields "userId:string"
 
 # Events async (RabbitMQ interne)
-/cqrs-generate event UserCreated --async --fields "userUuid:string, email:string"
+/obat/cqrs-generate event UserCreated --async --fields "userUuid:string, email:string"
 
 # Events externes (cross-service)
-/cqrs-generate event UserDeactivated --external --fields "userUuid:string, reason:string"
+/obat/cqrs-generate event UserDeactivated --external --fields "userUuid:string, reason:string"
 ```
 
 **Fichiers générés :**
@@ -518,19 +541,19 @@ Scaffolde du code CQRS (Commands, Queries, Events) selon les conventions Obat.
 - Mise à jour de `messenger.yaml` pour events `--external`
 - Classes `final readonly` avec constructor property promotion
 
-### /api-migrate
+### /obat/api-migrate
 
 Migre des endpoints API Platform du monorepo `core` vers les microservices.
 
 ```bash
 # Analyse seule (rapport de migration)
-/api-migrate GET /api/documents --target accounting
+/obat/api-migrate GET /api/documents --target accounting
 
 # Avec génération de code
-/api-migrate POST /api/cdn_files --target user --generate
+/obat/api-migrate POST /api/cdn_files --target user --generate
 
 # Opération custom API Platform
-/api-migrate PUT /api/documents/change_status/{uuid} --target accounting
+/obat/api-migrate PUT /api/documents/change_status/{uuid} --target accounting
 ```
 
 **Analyse complète :**
@@ -547,7 +570,7 @@ Migre des endpoints API Platform du monorepo `core` vers les microservices.
 - Checklist de non-régression complète
 
 **Flag `--generate` :**
-Génère le code CQRS dans le service cible via `/cqrs-generate`.
+Génère le code CQRS dans le service cible via `/obat/cqrs-generate`.
 
 ### /mr-feedback
 
@@ -749,9 +772,9 @@ Met à jour automatiquement le titre du terminal pour refléter l'activité cour
 
 ```
 skills/
+├── # ─── SKILLS GÉNÉRIQUES ───
 ├── workflow/SKILL.md                   # Orchestration cycle complet
 ├── brainstorm/SKILL.md                 # Brainstorming + mode Jira/SDD
-├── jira-sync/SKILL.md                  # Sync design doc → Jira
 ├── plan/SKILL.md                       # Plans d'implémentation + PRD
 ├── execute-plan/SKILL.md               # Exécution de plans + Ralph Loop
 ├── setup-worktree/SKILL.md             # Création worktree isolé
@@ -761,59 +784,30 @@ skills/
 ├── code-review/                        # Code review multi-agents
 │   ├── SKILL.md
 │   └── references/                     # Agents spécialisés
-│       ├── bug-hunter.md
-│       ├── security-auditor.md
-│       ├── code-quality-reviewer.md
-│       ├── contract-reviewer.md
-│       ├── test-coverage-reviewer.md
-│       └── historical-context-reviewer.md
-├── contract-check/                     # Vérification contrats OpenAPI
-│   ├── SKILL.md
-│   └── references/
-│       └── breaking-change-rules.md
-├── impact-analysis/                    # Analyse impact cross-service
-│   ├── SKILL.md
-│   └── references/
-│       └── message-service-mapping.md
-├── cqrs-generate/                      # Scaffolding CQRS
-│   ├── SKILL.md
-│   └── references/
-│       └── templates.md
-├── api-migrate/                        # Migration API Platform → microservices
-│   ├── SKILL.md
-│   └── references/
-│       ├── component-mapping.md
-│       ├── modernization-rules.md
-│       └── bc-checklist.md
 ├── mr-feedback/SKILL.md                # Traitement feedbacks MR reçus
 ├── sdd/                                # Specification Driven Development
-│   ├── setup/SKILL.md                  # Initialisation projet
-│   ├── specify/SKILL.md                # Création spécification
-│   ├── plan/SKILL.md                   # Planification architecture
-│   ├── tasks/SKILL.md                  # Découpage en tâches
-│   ├── implement/SKILL.md              # Implémentation TDD
-│   ├── document/SKILL.md               # Documentation
-│   ├── references/                     # Agents SDD
-│   │   ├── business-analyst.md
-│   │   ├── software-architect.md
-│   │   ├── researcher.md
-│   │   ├── code-explorer.md
-│   │   ├── developer.md
-│   │   ├── tech-lead.md
-│   │   └── tech-writer.md
-│   └── templates/
-│       └── spec-checklist.md
+│   ├── setup/SKILL.md
+│   ├── specify/SKILL.md
+│   ├── plan/SKILL.md
+│   ├── tasks/SKILL.md
+│   ├── implement/SKILL.md
+│   ├── document/SKILL.md
+│   └── references/                     # Agents SDD
 ├── docs/
 │   ├── analysis/SKILL.md               # Analyse santé documentation
-│   └── update/                         # Mise à jour documentation
-│       ├── SKILL.md
-│       └── references/tech-writer.md   # Agent tech-writer
+│   └── update/SKILL.md                 # Mise à jour documentation
 ├── pre-commit/                         # Hook pre-commit
-│   ├── README.md
 │   └── hooks/pre-tool-use.sh
-└── terminal-title/                     # Hook titre terminal
-    ├── SKILL.md
-    └── hooks/post-tool-use.sh
+├── terminal-title/                     # Hook titre terminal
+│   └── hooks/post-tool-use.sh
+│
+├── # ─── SKILLS OBAT (contexte gitlab.obat.fr) ───
+└── obat/
+    ├── contract-check/SKILL.md         # Vérification contrats OpenAPI
+    ├── impact-analysis/SKILL.md        # Analyse impact cross-service
+    ├── cqrs-generate/SKILL.md          # Scaffolding CQRS
+    ├── api-migrate/SKILL.md            # Migration API Platform → microservices
+    └── jira-sync/SKILL.md              # Sync design doc → Jira Obat
 ```
 
 ## Configuration

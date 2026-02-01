@@ -1,26 +1,6 @@
-# Configuration partagée équipe Obat
-jira:
-  # Composants disponibles (favoris)
-  preferred_components:
-    - backend
-    - frontend
-    - mobile
-    - infrastructure
-
-  # Labels fréquents
-  common_labels:
-    - feature
-    - bugfix
-    - tech-debt
-    - security
-
-# Comportement du brainstorming
-brainstorming:
-  # Proposer de récupérer le contexte Jira si un ID est détecté
-  auto_detect_jira_ids: true
-
-  # Profondeur de génération (epic → story → task → subtask)
-  default_depth: full
+# ============================================
+# CONFIGURATION GÉNÉRIQUE (tout projet)
+# ============================================
 
 # Configuration Workflow (orchestration)
 workflow:
@@ -46,23 +26,23 @@ workflow:
   # Proposer worktree automatiquement si pas sur branche feature
   auto-suggest-worktree: true
 
-# Configuration Quality Gates pour /finish-branch
+# Comportement du brainstorming
+brainstorming:
+  # Proposer de récupérer le contexte Jira si un ID est détecté
+  auto_detect_jira_ids: true
+
+  # Profondeur de génération (epic → story → task → subtask)
+  default_depth: full
+
+# Configuration Quality Gates pour /finish-branch (générique)
 finish-branch:
   # Gates par type de projet (auto-détecté)
   project-types:
-    php-backend:
-      # Détection : composer.json + Makefile présents
-      gates:
-        - make test
-        - make phpstan
-        - make fix-cs
-        - make rector
-        - make deptrac
     php-simple:
       # Détection : composer.json sans Makefile
       gates:
         - composer test
-        - composer phpstan
+        - vendor/bin/phpstan analyse
     node:
       # Détection : package.json présent
       gates:
@@ -73,13 +53,6 @@ finish-branch:
       gates:
         - pytest
         - ruff check
-
-  # Gates additionnelles pour --strict (analyses approfondies)
-  strict-gates:
-    - skill: contract-check
-      condition: contracts-dir-exists
-    - skill: impact-analysis
-      condition: contracts-dir-exists
 
 # Configuration Ralph Loop
 ralph:
@@ -122,3 +95,63 @@ slack:
     - "Pas de force push cette fois, promis"
     - "Le code est auto-documenté (dit-il, confiant)"
     - "Fonctionne sur ma machine ™️"
+
+# ============================================
+# CONFIGURATION OBAT (ignorée hors contexte)
+# ============================================
+# Active uniquement si : git remote -v | grep -q "gitlab.obat.fr"
+
+obat:
+  # Pattern de détection du contexte Obat
+  detection: gitlab.obat.fr
+
+  # Configuration Jira Obat
+  jira:
+    default_project: OBAT
+    board_id: 42
+    # Composants disponibles (favoris)
+    preferred_components:
+      - backend
+      - frontend
+      - mobile
+      - infrastructure
+    # Labels fréquents
+    common_labels:
+      - feature
+      - bugfix
+      - tech-debt
+      - security
+
+  # Surcharge des quality gates pour projets PHP Obat
+  finish-branch:
+    project-types:
+      php-backend:
+        # Détection : composer.json + Makefile présents
+        gates:
+          - make test
+          - make phpstan
+          - make fix-cs
+          - make rector
+          - make deptrac
+
+    # Gates additionnelles pour --strict (analyses approfondies)
+    strict-checks:
+      - skill: obat/contract-check
+        condition: contracts-dir-exists
+      - skill: obat/impact-analysis
+        condition: contracts-dir-exists
+
+  # Conventions de nommage des worktrees
+  worktree:
+    naming: "{type}/{PROJECT}-{ID}[-desc]"
+    types:
+      - feat
+      - tech
+      - fix
+      - hotfix
+
+  # Configuration ADR (Architecture Decision Records)
+  adr:
+    output_dir: docs/plans
+    final_dir: blueprint/adr
+    format: obat
